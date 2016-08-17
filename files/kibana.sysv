@@ -1,0 +1,94 @@
+#!/bin/env bash
+# kibana: Start/Stop kibana
+#
+# chkconfig: - 90 10
+# description: Kibana is a log analysis tool from http://elastic.co 
+# processname: kibana
+ 
+. /etc/init.d/functions
+. /etc/sysconfig/network
+ 
+SERVICENAME=kibana
+SERVICE_USER=kibana
+REQUIRE_SU=0
+ 
+if [ ! $USER == $SERVICE_USER ]; then
+  if [ $USER == "root" ]; then
+    REQUIRE_SU=1
+  else
+    echo "Script must be run by $SERVICE_USER or root. You are $USER"
+    exit 1
+  fi
+fi
+ 
+start(){
+  echo "Starting Kibana: "
+  if [ $REQUIRE_SU -eq 1 ]; then
+    su - $SERVICE_USER -c "/services/kibana/current/bin/kibana &"
+    if [ $? -eq 0 ]; then
+      success; echo
+    else
+      failure; echo; return 1
+    fi
+  else
+    /services/kibana/current/bin/kibana &
+    if [ $? -eq 0 ]; then
+      success; echo
+    else
+      failure; echo; return 1
+    fi
+  fi
+}
+
+stop(){
+  echo "Shutting down Kibana: "
+  if [ $REQUIRE_SU -eq 1 ]; then
+    su - $SERVICE_USER -c "kill -15 `cat /services/kibana/kibana.pid`"
+    if [ $? -eq 0 ]; then
+      success; echo
+    else
+      failure; echo; return 1
+    fi
+  else
+    kill -15 `cat /services/kibana/kibana.pid`
+    if [ $? -eq 0 ]; then
+      success; echo
+      rm /services/kibana/kibana.pid
+    else
+      failure; echo; return 1
+    fi
+  fi
+}
+ 
+status() {
+  if [ -z "/services/kibana/kibana.pid" ]; then
+    pid="$(cat /services/kibana/kibana.pid)"
+  fi
+  if [ -z "$pid" ]; then
+    echo "${SERVICENAME} is stopped"
+  else
+    echo "${SERVICENAME} (pid $pid) is running..."
+  fi
+}
+
+case "$1" in
+  start)
+    start
+  ;;
+  stop)
+    stop
+  ;;
+  status)
+    status
+  ;;
+  restart)
+    stop
+    start
+  ;;
+  *)
+    echo $"Usage: $0 {start|stop|restart|status}"
+    exit 1
+  ;;
+esac
+exit $?
+

@@ -1,0 +1,9 @@
+/services/kibana/logs/kibana.log
+{
+  missingok
+  sharedscripts
+  postrotate
+    /sbin/service kibana restart 2> /dev/null 2>/dev/null || true
+  endscript
+}
+

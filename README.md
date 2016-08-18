@@ -19,3 +19,4 @@ elasticsearch::node { 'cluster_logs' :<br/>
   cluster_nodes => [ 'node1.example.tld', 'node2.example.tld', 'node3.example.tld' ],<br/>
 }<br/>
 
+The 'use_iptables' flag causes the module to call my puppet-iptables module and open the listen port specified. Default of 5601.
